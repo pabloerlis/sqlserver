@@ -1,0 +1,26 @@
+CREATE TRIGGER TGR_VENDAS_ESTOQUE
+ON VENDAS
+FOR INSERT
+AS
+BEGIN
+    DECLARE
+   @PRODUTOID INT,
+    @IDVENDA   INT,
+	@BODYEMAIL VARCHAR
+
+    SELECT @IDVENDA = ID FROM INSERTED
+
+	SET @PRODUTOID = (SELECT PRODUTOID FROM VENDAS_PRODUTOS WHERE VENDAID = @IDVENDA)
+
+	IF (SELECT NM_QUANTIDADE FROM ESTOQUE WHERE PRODUTOID = @PRODUTOID) < 3 BEGIN
+
+	SET @BODYEMAIL ='Atenção! Produto de ID: ' + (select @PRODUTOID) + ' está com menos de 3 itens em estoque';
+
+    EXEC msdb.dbo.sp_send_dbmail
+      @recipients = 'contato@sysmap.com.br', 
+      @subject = 'Produto acabando', 
+      @body = @BODYEMAIL;
+
+	  END
+END
+GO
