@@ -1,0 +1,22 @@
+CREATE TRIGGER TGR_VENDAS
+ON VENDAS
+FOR INSERT
+AS
+BEGIN
+    DECLARE
+   @PRODUTOID INT,
+    @IDVENDA   INT,
+	@BODYEMAIL VARCHAR
+
+    SELECT @IDVENDA = ID FROM INSERTED
+
+	SET @BODYEMAIL ='Nova venda computada ID: ' + (select @IDVENDA);
+
+    EXEC msdb.dbo.sp_send_dbmail
+      @recipients = 'contato@sysmap.com.br', 
+      @subject = 'Produto acabando', 
+      @body = @BODYEMAIL;
+
+	  
+END
+GO
